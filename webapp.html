@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram Web App</title>
+  <script>
+    // Telegram Web App obyekti
+    const tg = window.Telegram.WebApp;
+
+    function sendData() {
+      tg.sendData(JSON.stringify({ message: "Hello from Web App!" })); // Botga ma'lumot jo'natish
+    }
+
+    window.onload = () => {
+      tg.expand(); // Web App oynasini kengaytirish
+    };
+  </script>
+</head>
+<body>
+  <h1>Web App sahifasi</h1>
+  <button onclick="sendData()">Ma'lumot jo'natish</button>
+</body>
+</html>
