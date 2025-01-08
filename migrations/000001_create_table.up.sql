@@ -1,0 +1,6 @@
+CREATE TABLE passwords(
+    id SERIAL PRIMARY KEY NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+    site VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL
+)
