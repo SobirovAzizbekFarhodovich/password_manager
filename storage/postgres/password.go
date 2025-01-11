@@ -16,22 +16,25 @@ func NewPasswordStorage(db *sql.DB) *PasswordStorage {
 	return &PasswordStorage{db: db}
 }
 
-func (u *PasswordStorage) CreatePassword(Password *models.Password) error {
+func (u *PasswordStorage) CreatePassword(userID string, password *models.Password) error {
 	query := `
-		INSERT INTO passwords (phone,site, password)
+		INSERT INTO passwords (user_id, site, password)
 		VALUES ($1, $2, $3)
 	`
-	_, err := u.db.Exec(query, Password.Phone, Password.Site, Password.Password)
-	return err
+	_, err := u.db.Exec(query, userID, password.Site, password.Password)
+	if err != nil {
+		return fmt.Errorf("failed to create password: %w", err)
+	}
+	return nil
 }
 
-func (u *PasswordStorage) GetAllPasswordsByPhone(phone string) ([]models.Password, error) {
+func (u *PasswordStorage) GetAllPasswordsByUserID(userID string) ([]models.Password, error) {
 	query := `
 		SELECT site, password
 		FROM passwords
-		WHERE phone = $1
+		WHERE user_id = $1
 	`
-	rows, err := u.db.Query(query, phone)
+	rows, err := u.db.Query(query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
@@ -46,25 +49,22 @@ func (u *PasswordStorage) GetAllPasswordsByPhone(phone string) ([]models.Passwor
 		passwords = append(passwords, password)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating over rows: %w", err)
-	}
-
 	if len(passwords) == 0 {
-		return nil, errors.New("no passwords found for the given phone number")
+		return nil, errors.New("no passwords found for the given user ID")
 	}
 
 	return passwords, nil
 }
 
-func (u *PasswordStorage) GetByName(phone string, site string) ([]models.Password, error) {
+// GetByName retrieves passwords for a specific user ID and site name
+func (u *PasswordStorage) GetByName(userID string, site string) ([]models.Password, error) {
 	query := `
 		SELECT site, password
 		FROM passwords
-		WHERE phone = $1 AND site ILIKE '%' || $2 || '%'
+		WHERE user_id = $1 AND site ILIKE '%' || $2 || '%'
 	`
-	log.Printf("Executing query with phone: %s, site: %s", phone, site)
-	rows, err := u.db.Query(query, phone, site)
+	log.Printf("Executing query with user_id: %s, site: %s", userID, site)
+	rows, err := u.db.Query(query, userID, site)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
@@ -79,12 +79,12 @@ func (u *PasswordStorage) GetByName(phone string, site string) ([]models.Passwor
 		passwords = append(passwords, password)
 	}
 
-	if err = rows.Err(); err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating over rows: %w", err)
 	}
 
 	if len(passwords) == 0 {
-		return nil, errors.New("no passwords found for the given phone number and site name")
+		return nil, errors.New("no passwords found for the given user ID and site name")
 	}
 
 	return passwords, nil

@@ -15,13 +15,9 @@ func main() {
     if err != nil {
         log.Fatalf("error while connect db, err: %s", err.Error())
     }
-
     services := service.InitServices(db)
-
     handler := handler.NewHTTPHandler(services)
-
     engine := api.NewGin(handler)
-
     err = engine.Run(cfg.HTTPPort)
     if err != nil {
         log.Fatalf("error while run engine, err: %s", err.Error())
